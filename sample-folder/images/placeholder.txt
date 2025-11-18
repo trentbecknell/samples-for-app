@@ -1,0 +1,4 @@
+This is a placeholder for image files.
+
+In a real scenario, you would place .jpg, .png, or other image files here.
+The folder upload feature will preserve this directory structure.

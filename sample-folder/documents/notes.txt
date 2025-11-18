@@ -1,0 +1,5 @@
+Hello from the sample folder!
+
+This text file is part of the sample folder structure.
+Upload the entire "sample-folder" directory to see how the application
+preserves folder structure during upload.
