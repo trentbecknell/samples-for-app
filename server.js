@@ -2,9 +2,24 @@ const express = require('express');
 const multer = require('multer');
 const path = require('path');
 const fs = require('fs');
+const rateLimit = require('express-rate-limit');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
+
+// Configure rate limiting for upload endpoint
+const uploadLimiter = rateLimit({
+    windowMs: 15 * 60 * 1000, // 15 minutes
+    max: 10, // Limit each IP to 10 requests per windowMs
+    message: 'Too many upload requests from this IP, please try again later.'
+});
+
+// Configure rate limiting for general API endpoints
+const apiLimiter = rateLimit({
+    windowMs: 1 * 60 * 1000, // 1 minute
+    max: 30, // Limit each IP to 30 requests per windowMs
+    message: 'Too many requests from this IP, please try again later.'
+});
 
 // Configure multer for file uploads
 const storage = multer.diskStorage({
@@ -35,7 +50,7 @@ const upload = multer({ storage: storage });
 app.use(express.static('public'));
 
 // Handle folder upload
-app.post('/upload', upload.array('files'), (req, res) => {
+app.post('/upload', uploadLimiter, upload.array('files'), (req, res) => {
     if (!req.files || req.files.length === 0) {
         return res.status(400).json({ error: 'No files uploaded' });
     }
@@ -54,7 +69,7 @@ app.post('/upload', upload.array('files'), (req, res) => {
 });
 
 // Get list of uploaded files
-app.get('/uploads', (req, res) => {
+app.get('/uploads', apiLimiter, (req, res) => {
     const uploadDir = './uploads';
     if (!fs.existsSync(uploadDir)) {
         return res.json({ files: [] });
