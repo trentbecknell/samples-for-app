@@ -1,0 +1,23 @@
+{
+  "labels": [
+    "fill",
+    "hihat",
+    "kick",
+    "other",
+    "ride",
+    "rim",
+    "roll",
+    "snare"
+  ],
+  "label_mapping": {
+    "fill": 0,
+    "hihat": 1,
+    "kick": 2,
+    "other": 3,
+    "ride": 4,
+    "rim": 5,
+    "roll": 6,
+    "snare": 7
+  },
+  "num_classes": 8
+}
