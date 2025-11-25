@@ -3,13 +3,20 @@ from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse
 from pydantic import BaseModel
 from typing import Optional, Dict
+from contextlib import asynccontextmanager
 import os
 from dotenv import load_dotenv
 from openai import OpenAI
 
 load_dotenv()
 
-app = FastAPI(title="AI Song Generator API", version="1.0.0")
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    print("🎵 AI Song Generator API Starting...")
+    print(f"✓ OpenAI Key: {'Configured' if os.getenv('OPENAI_API_KEY') else 'NOT SET'}")
+    yield
+
+app = FastAPI(title="AI Song Generator API", version="1.0.0", lifespan=lifespan)
 app.add_middleware(CORSMiddleware, allow_origins=["*"], allow_credentials=True, allow_methods=["*"], allow_headers=["*"])
 
 class CompositionRequest(BaseModel):
