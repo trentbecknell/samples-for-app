@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folder Upload Sample</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+
+        .container {
+            background: white;
+            border-radius: 20px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            padding: 40px;
+            max-width: 800px;
+            width: 100%;
+        }
+
+        h1 {
+            color: #333;
+            margin-bottom: 10px;
+            font-size: 2em;
+        }
+
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+            font-size: 1.1em;
+        }
+
+        .upload-section {
+            border: 3px dashed #667eea;
+            border-radius: 10px;
+            padding: 40px;
+            text-align: center;
+            margin-bottom: 30px;
+            transition: all 0.3s ease;
+            background: #f8f9ff;
+        }
+
+        .upload-section:hover {
+            border-color: #764ba2;
+            background: #f0f2ff;
+        }
+
+        .upload-section.dragover {
+            border-color: #764ba2;
+            background: #e8ebff;
+            transform: scale(1.02);
+        }
+
+        .file-input-wrapper {
+            position: relative;
+            display: inline-block;
+        }
+
+        input[type="file"] {
+            display: none;
+        }
+
+        .upload-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .upload-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.6);
+        }
+
+        .upload-btn:active {
+            transform: translateY(0);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 20px;
+        }
+
+        .selected-files {
+            margin-top: 20px;
+            text-align: left;
+        }
+
+        .selected-files h3 {
+            color: #333;
+            margin-bottom: 10px;
+        }
+
+        .file-list {
+            max-height: 200px;
+            overflow-y: auto;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 8px;
+        }
+
+        .file-item {
+            padding: 8px;
+            border-bottom: 1px solid #e0e0e0;
+            color: #555;
+            font-size: 14px;
+        }
+
+        .file-item:last-child {
+            border-bottom: none;
+        }
+
+        .submit-btn {
+            background: #28a745;
+            color: white;
+            padding: 12px 40px;
+            border: none;
+            border-radius: 50px;
+            font-size: 16px;
+            cursor: pointer;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(40, 167, 69, 0.4);
+        }
+
+        .submit-btn:hover {
+            background: #218838;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(40, 167, 69, 0.6);
+        }
+
+        .submit-btn:disabled {
+            background: #ccc;
+            cursor: not-allowed;
+            box-shadow: none;
+        }
+
+        .result {
+            margin-top: 20px;
+            padding: 20px;
+            border-radius: 10px;
+            display: none;
+        }
+
+        .result.success {
+            background: #d4edda;
+            border: 1px solid #c3e6cb;
+            color: #155724;
+        }
+
+        .result.error {
+            background: #f8d7da;
+            border: 1px solid #f5c6cb;
+            color: #721c24;
+        }
+
+        .uploaded-files {
+            margin-top: 40px;
+        }
+
+        .uploaded-files h2 {
+            color: #333;
+            margin-bottom: 20px;
+        }
+
+        .uploaded-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+
+        .uploaded-item {
+            padding: 10px;
+            border-bottom: 1px solid #e0e0e0;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .uploaded-item:last-child {
+            border-bottom: none;
+        }
+
+        .file-name {
+            color: #333;
+            font-weight: 500;
+        }
+
+        .file-size {
+            color: #666;
+            font-size: 14px;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .loading {
+            display: inline-block;
+            width: 20px;
+            height: 20px;
+            border: 3px solid #f3f3f3;
+            border-top: 3px solid #667eea;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin-left: 10px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📁 Folder Upload Sample</h1>
+        <p class="subtitle">Upload an entire folder with all its contents</p>
+
+        <div class="upload-section" id="dropZone">
+            <div class="upload-icon">☁️</div>
+            <p style="margin-bottom: 20px; color: #666;">
+                Drag and drop a folder here or click to select
+            </p>
+            <div class="file-input-wrapper">
+                <input type="file" id="folderInput" webkitdirectory directory multiple>
+                <button class="upload-btn" onclick="document.getElementById('folderInput').click()">
+                    Select Folder
+                </button>
+            </div>
+
+            <div class="selected-files" id="selectedFiles" style="display: none;">
+                <h3>Selected Files:</h3>
+                <div class="file-list" id="fileList"></div>
+                <button class="submit-btn" id="submitBtn" onclick="uploadFolder()">
+                    Upload Files
+                </button>
+            </div>
+        </div>
+
+        <div class="result" id="result"></div>
+
+        <div class="uploaded-files">
+            <h2>Previously Uploaded Files</h2>
+            <div class="uploaded-list" id="uploadedList">
+                <p style="color: #666; text-align: center;">No files uploaded yet</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let selectedFilesArray = [];
+
+        // Load previously uploaded files on page load
+        window.addEventListener('load', loadUploadedFiles);
+
+        // Handle file selection
+        document.getElementById('folderInput').addEventListener('change', function(e) {
+            selectedFilesArray = Array.from(e.target.files);
+            displaySelectedFiles();
+        });
+
+        // Drag and drop functionality
+        const dropZone = document.getElementById('dropZone');
+
+        dropZone.addEventListener('dragover', function(e) {
+            e.preventDefault();
+            dropZone.classList.add('dragover');
+        });
+
+        dropZone.addEventListener('dragleave', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+        });
+
+        dropZone.addEventListener('drop', function(e) {
+            e.preventDefault();
+            dropZone.classList.remove('dragover');
+            
+            const items = e.dataTransfer.items;
+            selectedFilesArray = [];
+            
+            for (let i = 0; i < items.length; i++) {
+                const item = items[i].webkitGetAsEntry();
+                if (item) {
+                    traverseFileTree(item);
+                }
+            }
+        });
+
+        function traverseFileTree(item, path = '') {
+            if (item.isFile) {
+                item.file(function(file) {
+                    file.webkitRelativePath = path + file.name;
+                    selectedFilesArray.push(file);
+                    displaySelectedFiles();
+                });
+            } else if (item.isDirectory) {
+                const dirReader = item.createReader();
+                dirReader.readEntries(function(entries) {
+                    for (let i = 0; i < entries.length; i++) {
+                        traverseFileTree(entries[i], path + item.name + '/');
+                    }
+                });
+            }
+        }
+
+        function displaySelectedFiles() {
+            const fileList = document.getElementById('fileList');
+            const selectedFilesDiv = document.getElementById('selectedFiles');
+            
+            if (selectedFilesArray.length > 0) {
+                selectedFilesDiv.style.display = 'block';
+                fileList.innerHTML = '';
+                
+                selectedFilesArray.forEach(file => {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'file-item';
+                    const filePath = file.webkitRelativePath || file.name;
+                    fileItem.textContent = `${filePath} (${formatFileSize(file.size)})`;
+                    fileList.appendChild(fileItem);
+                });
+            }
+        }
+
+        async function uploadFolder() {
+            if (selectedFilesArray.length === 0) {
+                showResult('Please select a folder first', 'error');
+                return;
+            }
+
+            const submitBtn = document.getElementById('submitBtn');
+            const result = document.getElementById('result');
+            
+            submitBtn.disabled = true;
+            submitBtn.innerHTML = 'Uploading... <span class="loading"></span>';
+            result.style.display = 'none';
+
+            const formData = new FormData();
+            selectedFilesArray.forEach(file => {
+                formData.append('files', file, file.webkitRelativePath || file.name);
+            });
+
+            try {
+                const response = await fetch('/upload', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                if (response.ok) {
+                    showResult(`✅ Successfully uploaded ${data.fileCount} files!`, 'success');
+                    selectedFilesArray = [];
+                    document.getElementById('selectedFiles').style.display = 'none';
+                    document.getElementById('folderInput').value = '';
+                    loadUploadedFiles();
+                } else {
+                    showResult(`❌ Error: ${data.error}`, 'error');
+                }
+            } catch (error) {
+                showResult(`❌ Error uploading files: ${error.message}`, 'error');
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Upload Files';
+            }
+        }
+
+        async function loadUploadedFiles() {
+            try {
+                const response = await fetch('/uploads');
+                const data = await response.json();
+                
+                const uploadedList = document.getElementById('uploadedList');
+                
+                if (data.files && data.files.length > 0) {
+                    uploadedList.innerHTML = '';
+                    data.files.forEach(file => {
+                        const item = document.createElement('div');
+                        item.className = 'uploaded-item';
+                        item.innerHTML = `
+                            <span class="file-name">${file.name}</span>
+                            <span class="file-size">${formatFileSize(file.size)}</span>
+                        `;
+                        uploadedList.appendChild(item);
+                    });
+                } else {
+                    uploadedList.innerHTML = '<p style="color: #666; text-align: center;">No files uploaded yet</p>';
+                }
+            } catch (error) {
+                console.error('Error loading uploaded files:', error);
+            }
+        }
+
+        function showResult(message, type) {
+            const result = document.getElementById('result');
+            result.textContent = message;
+            result.className = `result ${type}`;
+            result.style.display = 'block';
+        }
+
+        function formatFileSize(bytes) {
+            if (bytes === 0) return '0 Bytes';
+            const k = 1024;
+            const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+            const i = Math.floor(Math.log(bytes) / Math.log(k));
+            return Math.round(bytes / Math.pow(k, i) * 100) / 100 + ' ' + sizes[i];
+        }
+    </script>
+</body>
+</html>
